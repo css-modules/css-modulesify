@@ -2,7 +2,7 @@
 
 A browserify transform to load [CSS Modules](https://github.com/css-modules/css-modules).
 
-** Please note that this is still highly experimental. **
+**Please note that this is still highly experimental.**
 
 ## Why CSS Modules?
 
@@ -40,9 +40,11 @@ Take a look at the [example](./example/index.js) for more details, or [inspect t
 MIT
 
 
-## Thanks and inspiration
+## With thanks
 
-To all the fine folk working on [css-modules](https://github.com/css-modules)
+ - Tobias Koppers
+ - Mark Dalgleish
+ - Glen Maddern
 
 ----
 Josh Johnston, 2015.
