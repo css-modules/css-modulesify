@@ -17,8 +17,9 @@
     "watchify": "^3.2.1"
   },
   "scripts": {
-    "build-example": "watchify -v -t ./lib/local-css -o example/dist/index.js example/index.js",
+    "build-example": "browserify -t ./lib/local-css -o example/dist/index.js example/index.js",
     "export-css": "browserify -t ./lib/local-css src/export-css.js | node",
+    "publish-gh-pages": "npm run build-example && ./bin/publish-gh-pages",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "joshwnj",
