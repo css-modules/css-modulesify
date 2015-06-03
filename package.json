@@ -1,8 +1,8 @@
 {
-  "name": "local-css",
+  "name": "css-modulesify",
   "version": "1.1.1",
-  "description": "A browserify transform allowing you to `require('styles.css')` and get back locally scoped classnames.",
-  "main": "index.js",
+  "description": "A browserify transform to load CSS Modules",
+  "main": "lib/index.js",
   "dependencies": {
     "autoprefixer-core": "^5.2.0",
     "css-modules-loader-core": "0.0.3",
@@ -18,8 +18,8 @@
     "watchify": "^3.2.1"
   },
   "scripts": {
-    "build-example": "browserify -t ./lib/local-css -o example/dist/index.js example/index.js",
-    "export-css": "browserify -t ./lib/local-css example/export-css.js | node",
+    "build-example": "browserify -t ./lib -o example/dist/index.js example/index.js",
+    "export-css": "browserify -t ./lib example/export-css.js | node",
     "publish-gh-pages": "npm run build-example && ./bin/publish-gh-pages",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
