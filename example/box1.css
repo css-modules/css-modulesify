@@ -1,0 +1,8 @@
+.box {
+  padding: 10px;
+  border: 1px dotted #000;
+}
+
+.text {
+  font-style: italic;
+}

@@ -1,0 +1,14 @@
+.box {
+  padding: 10px;
+  background: #555;
+  transition: all 1s;
+}
+
+.box:hover {
+  background: #933;
+}
+
+.text {
+  color: #fff;
+  font-weight: bold;
+}
