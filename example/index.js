@@ -12,12 +12,12 @@ insertCss(box2);
 var content = h('div', [
   h('p', 'This is a demonstration of using generic classnames in css files like `.box` and `.text`, without any danger of name collisions between components'),
 
-  h('div', { className: box1['.box'] }, [
-    h('p', { className: box1['.text'] }, 'Box 1')
+  h('div', { className: box1.box }, [
+    h('p', { className: box1.text }, 'Box 1')
   ]),
 
-  h('div', { className: box2['.box'] }, [
-    h('p', { className: box2['.text'] }, 'Box 2')
+  h('div', { className: box2.box }, [
+    h('p', { className: box2.text }, 'Box 2')
   ])
 ]);
 

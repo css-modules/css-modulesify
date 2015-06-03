@@ -1,6 +1,6 @@
 .box {
+  extends: dottyBorder from "./borders.css";
   padding: 10px;
-  border: 1px dotted #000;
 }
 
 .text {

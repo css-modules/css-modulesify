@@ -1,10 +1,11 @@
 {
   "name": "local-css",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A browserify transform allowing you to `require('styles.css')` and get back locally scoped classnames.",
   "main": "index.js",
   "dependencies": {
     "autoprefixer-core": "^5.2.0",
+    "css-modules-loader-core": "0.0.3",
     "css-selector-tokenizer": "^0.3.1",
     "postcss": "^4.1.11",
     "shasum": "^1.0.1",
