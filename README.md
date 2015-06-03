@@ -34,7 +34,7 @@ To add the css to the html page there are 2 easy options:
 Example
 ----
 
-Take a look at the [example](./example/index.js) for more details.
+Take a look at the [example](./example/index.js) for more details, or [inspect the source](http://joshwnj.github.io/local-css/).
 
 Licence
 ----
