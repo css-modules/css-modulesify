@@ -4,18 +4,13 @@
   "description": "A browserify transform to load CSS Modules",
   "main": "lib/index.js",
   "dependencies": {
-    "autoprefixer-core": "^5.2.0",
     "css-modules-loader-core": "0.0.3",
-    "css-selector-tokenizer": "^0.3.1",
-    "postcss": "^4.1.11",
-    "shasum": "^1.0.1",
     "through": "^2.3.7"
   },
   "devDependencies": {
     "gh-pages": "^0.3.0",
     "hyperscript": "^1.4.6",
-    "insert-css": "^0.2.0",
-    "watchify": "^3.2.1"
+    "insert-css": "^0.2.0"
   },
   "scripts": {
     "build-example": "browserify -t ./lib -o example/dist/index.js example/index.js",
