@@ -8,6 +8,7 @@
     "through": "^2.3.7"
   },
   "devDependencies": {
+    "browserify": "^10.2.3",
     "gh-pages": "^0.3.0",
     "hyperscript": "^1.4.6",
     "insert-css": "^0.2.0"
