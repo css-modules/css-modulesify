@@ -2,21 +2,13 @@
   "name": "css-modulesify",
   "version": "0.1.2",
   "description": "A browserify transform to load CSS Modules",
-  "main": "lib/index.js",
+  "main": "index.js",
   "dependencies": {
     "css-modules-loader-core": "0.0.5",
     "through": "^2.3.7"
   },
-  "devDependencies": {
-    "browserify": "^10.2.3",
-    "gh-pages": "^0.3.0",
-    "hyperscript": "^1.4.6",
-    "insert-css": "^0.2.0"
-  },
+  "devDependencies": {},
   "scripts": {
-    "build-example": "browserify -t ./lib -o example/dist/index.js example/index.js",
-    "export-css": "browserify -t ./lib example/export-css.js | node",
-    "publish-gh-pages": "npm run build-example && ./bin/publish-gh-pages",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "joshwnj",

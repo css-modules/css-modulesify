@@ -32,13 +32,11 @@ To add the css to the html page there are 2 easy options:
 
 ## Example
 
-Take a look at the [example](./example/index.js) for more details, or [inspect the source](https://css-modules.github.io/css-modulesify/).
-
+An example implementaion can be found [here](https://github.com/css-modules/browserify-demo).
 
 ## Licence
 
 MIT
-
 
 ## With thanks
 
