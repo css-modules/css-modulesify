@@ -4,7 +4,7 @@
   "description": "A browserify transform to load CSS Modules",
   "main": "index.js",
   "dependencies": {
-    "css-modules-loader-core": "0.0.6",
+    "css-modules-loader-core": "0.0.7",
     "through": "^2.3.7"
   },
   "devDependencies": {},
