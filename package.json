@@ -19,6 +19,7 @@
   },
   "keywords": [
     "browserify-transform",
+    "browserify-plugin",
     "css-modules",
     "browserify",
     "css"
