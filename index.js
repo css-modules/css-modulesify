@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var through = require('through');
 var FileSystemLoader = require('css-modules-loader-core/lib/file-system-loader');
+var assign = require('object-assign');
 
 var cssExt = /\.css$/;
 module.exports = function (browserify, options) {
@@ -15,7 +16,12 @@ module.exports = function (browserify, options) {
   var cssOut = through();
   cssOut.pipe(fs.createWriteStream(cssOutFilename));
 
+  // keep track of css files visited
   var filenames = [];
+
+  // keep track of all tokens so we can avoid duplicates
+  var tokensByFile = {};
+
   browserify.transform(function transform (filename) {
     // only handle .css files
     if (!cssExt.test(filename)) {
@@ -29,9 +35,14 @@ module.exports = function (browserify, options) {
       var self = this;
 
       var loader = new FileSystemLoader(path.dirname(filename));
+
+      // pre-populate the loader's tokensByFile
+      loader.tokensByFile = tokensByFile;
+
       loader.fetch(path.basename(filename), '/').then(function (tokens) {
         var output = "module.exports = " + JSON.stringify(tokens);
 
+        assign(tokensByFile, loader.tokensByFile);
         cssOut.queue(loader.finalSource);
 
         self.queue(output);
