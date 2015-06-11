@@ -7,9 +7,9 @@ var cssExt = /\.css$/;
 module.exports = function (browserify, options) {
   options = options || {};
 
-  var cssOutFilename = options.css;
+  var cssOutFilename = options.output || options.o;
   if (!cssOutFilename) {
-    throw new Error('css-modulesify needs the --css option (path to output css file)');
+    throw new Error('css-modulesify needs the --output / -o option (path to output css file)');
   }
 
   var cssOut = through();
