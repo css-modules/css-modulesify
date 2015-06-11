@@ -14,7 +14,7 @@ Read Mark Dalgleish's excellent ["End of Global CSS"](https://medium.com/seek-ui
 
 First install the package: `npm install --save css-modulesify`
 
-Then you can use it as a browserify transform, eg: `browserify -t css-modulesify example/index.js`
+Then you can use it as a browserify plugin, eg: `browserify -p [ css-modulesify --css dist/main.css ] example/index.js`
 
 Inside `example/index.js` you can now load css into your scripts.  When you do `var box1 = require('./box1.css')`, `box1` will be an object to lookup the localized classname for one of the selectors in that file.
 
@@ -25,14 +25,11 @@ var styles = require('./styles.css');
 var div = `<div class="${styles.inner}">...</div>`;
 ```
 
-To add the css to the html page there are 2 easy options:
-
-- add the css to the DOM at runtime (good for component-based css): `require('insert-css')(require('./styles.css'))`
-- export a static css file at build-time: `browserify -t css-modulesify example/export-css.js | node > bundle.css`
+The generated css will contain locally-scoped versions of any css you have `require`'d, and will be written out to the file you specify in the `--css` option.
 
 ## Example
 
-An example implementaion can be found [here](https://github.com/css-modules/browserify-demo).
+An example implementation can be found [here](https://github.com/css-modules/browserify-demo).
 
 ## Licence
 
