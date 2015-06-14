@@ -13,14 +13,16 @@ module.exports = function (browserify, options) {
     throw new Error('css-modulesify needs the --output / -o option (path to output css file)');
   }
 
-  var cssOut = through();
-  cssOut.pipe(fs.createWriteStream(cssOutFilename));
-
   // keep track of css files visited
   var filenames = [];
 
   // keep track of all tokens so we can avoid duplicates
   var tokensByFile = {};
+
+  // keep track of all source files for later builds: when
+  // using watchify, not all files will be caught on subsequent
+  // bundles
+  var sourceByFile = {};
 
   browserify.transform(function transform (filename) {
     // only handle .css files
@@ -43,7 +45,9 @@ module.exports = function (browserify, options) {
         var output = "module.exports = " + JSON.stringify(tokens);
 
         assign(tokensByFile, loader.tokensByFile);
-        cssOut.queue(loader.finalSource);
+
+        // store this file's source to be written out to disk later
+        sourceByFile[filename] = loader.finalSource;
 
         self.queue(output);
         self.queue(null);
@@ -56,13 +60,22 @@ module.exports = function (browserify, options) {
   // wrap the `bundle` function
   var bundle = browserify.bundle;
   browserify.bundle = function (opts, cb) {
+    // reset the `tokensByFile` cache
+    tokensByFile = {};
 
     // call the original
     var stream = bundle.apply(browserify, arguments);
 
     // close the css stream
     stream.on('end', function () {
-      cssOut.queue(null);
+      // Combine the collected sources into a single CSS file
+      var css = Object.keys(sourceByFile).map(function(file) {
+        return sourceByFile[file];
+      }).join('\n');
+
+      fs.writeFile(cssOutFilename, css, function(err) {
+        if (err) console.error(err);
+      });
     });
 
     return stream;
