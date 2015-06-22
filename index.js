@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var through = require('through');
+var Core = require('css-modules-loader-core');
 var FileSystemLoader = require('css-modules-loader-core/lib/file-system-loader');
 var assign = require('object-assign');
 
@@ -11,6 +12,33 @@ module.exports = function (browserify, options) {
   var cssOutFilename = options.output || options.o;
   if (!cssOutFilename) {
     throw new Error('css-modulesify needs the --output / -o option (path to output css file)');
+  }
+
+  // PostCSS plugins passed to FileSystemLoader
+  var plugins = options.use || options.u;
+  if (!plugins) {
+    plugins = Core.defaultPlugins;
+  } else {
+    if (typeof plugins === 'string') {
+      plugins = [ plugins ];
+    }
+
+    plugins = plugins.map(function requirePlugin (name) {
+      // assume objects are already required plugins
+      if (typeof name === 'object') {
+        return name;
+      }
+
+      var plugin = require(name);
+
+      if (name in options) {
+        plugin = plugin(options[name]);
+      } else {
+        plugin = plugin.postcss || plugin();
+      }
+
+      return plugin;
+    });
   }
 
   // keep track of css files visited
@@ -36,7 +64,7 @@ module.exports = function (browserify, options) {
     return through(function noop () {}, function end () {
       var self = this;
 
-      var loader = new FileSystemLoader(path.dirname(filename));
+      var loader = new FileSystemLoader(path.dirname(filename), plugins);
 
       // pre-populate the loader's tokensByFile
       loader.tokensByFile = tokensByFile;

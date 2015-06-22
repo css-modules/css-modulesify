@@ -1,6 +1,8 @@
 # css-modulesify
 
-A browserify transform to load [CSS Modules](https://github.com/css-modules/css-modules).
+A browserify transform to load [CSS Modules].
+
+[CSS Modules]: https://github.com/css-modules/css-modules
 
 **Please note that this is still highly experimental.**
 
@@ -26,6 +28,35 @@ var div = `<div class="${styles.inner}">...</div>`;
 ```
 
 The generated css will contain locally-scoped versions of any css you have `require`'d, and will be written out to the file you specify in the `--output` or `-o` option.
+
+### PostCSS Plugins
+
+The following PostCSS plugins are enabled by default:
+
+  * [postcss-modules-local-by-default]
+  * [postcss-modules-extract-imports]
+  * [postcss-modules-scope]
+
+(i.e. the [CSS Modules] specification).
+
+You can supply your own additional PostCSS Plugins by passing `--use|-u` to `css-modulesify`.
+
+In addion you may also wish to configure defined PostCSS plugins by passing `--plugin.option true`.
+
+An example of this would be:
+
+```
+browserify -p [css-modulesify -u postcss-modules-local-by-default \
+  -u postcss-modules-extract-imports \
+  -u postcss-modules-scope \
+  -u postcss-color-rebeccapurple \
+  -u autoprefixer --autoprefixer.browsers '> 5%' \
+  -o dist/main.css] -o dist/index.js src/index.js
+```
+
+[postcss-modules-local-by-default]: https://github.com/css-modules/postcss-modules-local-by-default
+[postcss-modules-extract-imports]: https://github.com/css-modules/postcss-modules-extract-imports
+[postcss-modules-scope]: https://github.com/css-modules/postcss-modules-scope
 
 ## Example
 
