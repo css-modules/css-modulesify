@@ -46,6 +46,7 @@ module.exports = function (browserify, options) {
 
       // custom scoped name generation
       if (name === 'postcss-modules-scope') {
+        options[name] = options[name] || {};
         options[name].generateScopedName = createScopedNameFunc(plugin);
       }
 
