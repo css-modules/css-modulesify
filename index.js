@@ -10,7 +10,7 @@ var stringHash = require('string-hash');
   Custom `generateScopedName` function for `postcss-modules-scope`.
   Appends a hash of the css source.
 */
-function createNameFunc (plugin) {
+function createScopedNameFunc (plugin) {
   var orig = plugin.generateScopedName;
   return function (name, path, css) {
     var hash = stringHash(css).toString(36).substr(0, 5);
