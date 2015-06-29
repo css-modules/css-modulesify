@@ -4,6 +4,19 @@ var through = require('through');
 var Core = require('css-modules-loader-core');
 var FileSystemLoader = require('css-modules-loader-core/lib/file-system-loader');
 var assign = require('object-assign');
+var stringHash = require('string-hash');
+
+/*
+  Custom `generateScopedName` function for `postcss-modules-scope`.
+  Appends a hash of the css source.
+*/
+function createNameFunc (plugin) {
+  var orig = plugin.generateScopedName;
+  return function (name, path, css) {
+    var hash = stringHash(css).toString(36).substr(0, 5);
+    return orig.apply(plugin, arguments) + '___' + hash;
+  }
+};
 
 var cssExt = /\.css$/;
 module.exports = function (browserify, options) {
@@ -30,6 +43,11 @@ module.exports = function (browserify, options) {
       }
 
       var plugin = require(name);
+
+      // custom scoped name generation
+      if (name === 'postcss-modules-scope') {
+        options[name].generateScopedName = createScopedNameFunc(plugin);
+      }
 
       if (name in options) {
         plugin = plugin(options[name]);

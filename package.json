@@ -6,6 +6,7 @@
   "dependencies": {
     "css-modules-loader-core": "0.0.10",
     "object-assign": "^3.0.0",
+    "string-hash": "^1.1.0",
     "through": "^2.3.7"
   },
   "devDependencies": {},
