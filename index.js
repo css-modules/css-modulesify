@@ -24,8 +24,8 @@ module.exports = function (browserify, options) {
     }
 
     plugins = plugins.map(function requirePlugin (name) {
-      // assume objects are already required plugins
-      if (typeof name === 'object') {
+      // assume functions are already required plugins
+      if (typeof name === 'function') {
         return name;
       }
 
