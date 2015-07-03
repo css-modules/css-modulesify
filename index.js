@@ -29,7 +29,7 @@ module.exports = function (browserify, options) {
         return name;
       }
 
-      var plugin = require(name);
+      var plugin = require(require.resolve(name));
 
       if (name in options) {
         plugin = plugin(options[name]);
