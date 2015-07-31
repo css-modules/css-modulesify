@@ -108,22 +108,20 @@ module.exports = function (browserify, options) {
 
   // wrap the `bundle` function
   var bundle = browserify.bundle;
-  browserify.bundle = function (opts, cb) {
+  browserify.bundle = function (cb) {
     // reset the `tokensByFile` cache
     tokensByFile = {};
 
     // call the original
-    var stream = bundle.apply(browserify, arguments);
-
-    // close the css stream
-    stream.on('end', function () {
+    var stream = bundle.call(browserify, function () {
       // Combine the collected sources into a single CSS file
       var css = Object.keys(sourceByFile).map(function(file) {
         return sourceByFile[file];
       }).join('\n');
+      var args = arguments;
 
-      fs.writeFile(cssOutFilename, css, function(err) {
-        if (err) console.error(err);
+      fs.writeFile(cssOutFilename, css, function () {
+        if (typeof cb === 'function') cb.apply(null, args);
       });
     });
 
