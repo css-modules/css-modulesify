@@ -73,7 +73,7 @@ module.exports = function (browserify, options) {
   // bundles
   var sourceByFile = {};
 
-  browserify.transform(function transform (filename) {
+  function transform (filename) {
     // only handle .css files
     if (!cssExt.test(filename)) {
       return through();
@@ -104,6 +104,10 @@ module.exports = function (browserify, options) {
         console.error(err);
       });
     });
+  }
+
+  browserify.transform(transform, {
+    global: true
   });
 
   // wrap the `bundle` function
