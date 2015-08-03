@@ -9,9 +9,13 @@
     "string-hash": "^1.1.0",
     "through": "^2.3.7"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "browserify": "^11.0.1",
+    "proxyquire": "^1.6.0",
+    "tape": "^4.0.1"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tape tests/*.js"
   },
   "author": "joshwnj",
   "license": "MIT",

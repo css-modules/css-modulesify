@@ -1,5 +1,7 @@
 # css-modulesify
 
+[![Build Status](https://travis-ci.org/css-modules/css-modulesify.svg?branch=master)](https://travis-ci.org/css-modules/css-modulesify)
+
 A browserify transform to load [CSS Modules].
 
 [CSS Modules]: https://github.com/css-modules/css-modules

@@ -1,0 +1,4 @@
+.foo {
+  composes: bar from "./styles-2.css";
+  color: #F00;
+}
