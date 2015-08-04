@@ -1,0 +1,4 @@
+.foo {
+  composes: foo from "cool-styles/styles.css";
+  background: black;
+}
