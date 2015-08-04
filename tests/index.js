@@ -32,6 +32,7 @@ function runTestCase (dir) {
     var b = browserify();
     b.add(path.join(casesDir, dir, 'main.js'));
     b.plugin(cssModulesify, {
+      rootDir: path.join(casesDir, dir),
       output: cssOutFilename
     });
 

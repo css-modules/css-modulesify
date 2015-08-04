@@ -22,6 +22,8 @@ var cssExt = /\.css$/;
 module.exports = function (browserify, options) {
   options = options || {};
 
+  var rootDir = options.rootDir || options.d || '/';
+
   var cssOutFilename = options.output || options.o;
   if (!cssOutFilename) {
     throw new Error('css-modulesify needs the --output / -o option (path to output css file)');
@@ -84,13 +86,12 @@ module.exports = function (browserify, options) {
 
     return through(function noop () {}, function end () {
       var self = this;
-
-      var loader = new FileSystemLoader(path.dirname(filename), plugins);
+      var loader = new FileSystemLoader(rootDir, plugins);
 
       // pre-populate the loader's tokensByFile
       loader.tokensByFile = tokensByFile;
 
-      loader.fetch(path.basename(filename), '/').then(function (tokens) {
+      loader.fetch(path.relative(rootDir, filename), '/').then(function (tokens) {
         var output = "module.exports = " + JSON.stringify(tokens);
 
         assign(tokensByFile, loader.tokensByFile);
@@ -101,7 +102,7 @@ module.exports = function (browserify, options) {
         self.queue(output);
         self.queue(null);
       }, function (err) {
-        console.error(err);
+        console.error('loader err', err);
       });
     });
   }

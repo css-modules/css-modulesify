@@ -14,7 +14,7 @@ Normally you need to use a strict naming convention like BEM to ensure that one 
 
 Read Mark Dalgleish's excellent ["End of Global CSS"](https://medium.com/seek-ui-engineering/the-end-of-global-css-90d2a4a06284) and check out [css-modules](https://github.com/css-modules/css-modules) for more context.
 
-## Usage
+## Getting started
 
 First install the package: `npm install --save css-modulesify`
 
@@ -31,7 +31,27 @@ var div = `<div class="${styles.inner}">...</div>`;
 
 The generated css will contain locally-scoped versions of any css you have `require`'d, and will be written out to the file you specify in the `--output` or `-o` option.
 
-### PostCSS Plugins
+## API Usage
+
+```js
+var b = require('browserify')();
+
+b.add('./main.js');
+b.plugin(require('css-modulesify'), {
+  rootDir: __dirname,
+  output: './path/to/my.css'
+});
+
+b.bundle();
+```
+
+### Options:
+
+- `rootDir`: absolute path to your project's root directory. This is optional but providing it will result in better generated classnames.
+- `output`: path to write the generated css
+- `use`: optional array of postcss plugins (by default we use the css-modules core plugins)
+
+## PostCSS Plugins
 
 The following PostCSS plugins are enabled by default:
 
