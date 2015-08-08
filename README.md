@@ -61,9 +61,11 @@ The following PostCSS plugins are enabled by default:
 
 (i.e. the [CSS Modules] specification).
 
-You can supply your own additional PostCSS Plugins by passing `--use|-u` to `css-modulesify`.
+You can override the default PostCSS Plugins (and add your own) by passing `--use|-u` to `css-modulesify`.
 
-In addion you may also wish to configure defined PostCSS plugins by passing `--plugin.option true`.
+Or if you just want to add some extra plugins to run after the default, add them to the `postcssAfter` array option (API only at this time).
+
+In addition you may also wish to configure defined PostCSS plugins by passing `--plugin.option true`.
 
 An example of this would be:
 

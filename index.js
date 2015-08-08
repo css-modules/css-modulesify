@@ -64,6 +64,8 @@ module.exports = function (browserify, options) {
     });
   }
 
+  plugins = plugins.concat(options.postcssAfter || []);
+
   // keep track of css files visited
   var filenames = [];
 
