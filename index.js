@@ -102,7 +102,7 @@ module.exports = function (browserify, options) {
         self.queue(output);
         self.queue(null);
       }, function (err) {
-        console.error('loader err', err);
+        browserify.emit('error', err);
       });
     });
   }
@@ -111,27 +111,24 @@ module.exports = function (browserify, options) {
     global: true
   });
 
-  // wrap the `bundle` function
-  var bundle = browserify.bundle;
-  browserify.bundle = function (cb) {
-    // reset the `tokensByFile` cache
-    tokensByFile = {};
+  browserify.on('bundle', function(bundle) {
+    bundle.on('end', function() {
+      // reset the `tokensByFile` cache
+      tokensByFile = {};
 
-    // call the original
-    var stream = bundle.call(browserify, function () {
       // Combine the collected sources into a single CSS file
       var css = Object.keys(sourceByFile).map(function(file) {
         return sourceByFile[file];
       }).join('\n');
       var args = arguments;
 
-      fs.writeFile(cssOutFilename, css, function () {
-        if (typeof cb === 'function') cb.apply(null, args);
+      fs.writeFile(cssOutFilename, css, function (err) {
+        if (err) {
+          browserify.emit('error', err);
+        }
       });
     });
-
-    return stream;
-  };
+  });
 
   return browserify;
 };
