@@ -49,6 +49,7 @@ b.bundle();
 
 - `rootDir`: absolute path to your project's root directory. This is optional but providing it will result in better generated classnames.
 - `output`: path to write the generated css
+- `json`: optional path to write a json manifest of classnames
 - `use`: optional array of postcss plugins (by default we use the css-modules core plugins)
 
 ## PostCSS Plugins
