@@ -37,34 +37,36 @@ module.exports = function (browserify, options) {
     if (typeof plugins === 'string') {
       plugins = [ plugins ];
     }
-
-    plugins = plugins.map(function requirePlugin (name) {
-      // assume functions are already required plugins
-      if (typeof name === 'function') {
-        return name;
-      }
-
-      var plugin = require(require.resolve(name));
-
-      // custom scoped name generation
-      if (name === 'postcss-modules-scope') {
-        options[name] = options[name] || {};
-        if (!options[name].generateScopedName) {
-          options[name].generateScopedName = createScopedNameFunc(plugin);
-        }
-      }
-
-      if (name in options) {
-        plugin = plugin(options[name]);
-      } else {
-        plugin = plugin.postcss || plugin();
-      }
-
-      return plugin;
-    });
   }
 
-  plugins = plugins.concat(options.postcssAfter || []);
+  var postcssAfter = options.postcssAfter || options.after || [];
+  plugins = plugins.concat(postcssAfter);
+
+  // load plugins by name (if a string is used)
+  plugins = plugins.map(function requirePlugin (name) {
+    // assume functions are already required plugins
+    if (typeof name === 'function') {
+      return name;
+    }
+
+    var plugin = require(require.resolve(name));
+
+    // custom scoped name generation
+    if (name === 'postcss-modules-scope') {
+      options[name] = options[name] || {};
+      if (!options[name].generateScopedName) {
+        options[name].generateScopedName = createScopedNameFunc(plugin);
+      }
+    }
+
+    if (name in options) {
+      plugin = plugin(options[name]);
+    } else {
+      plugin = plugin.postcss || plugin();
+    }
+
+    return plugin;
+  });
 
   // keep track of css files visited
   var filenames = [];
