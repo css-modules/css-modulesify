@@ -50,7 +50,7 @@ module.exports = function (browserify, options) {
     throw new Error('css-modulesify needs the --output / -o option (path to output css file)');
   }
 
-  var jsonOutFilename = options.json;
+  var jsonOutFilename = options.json || options.jsonOutput;
 
   // PostCSS plugins passed to FileSystemLoader
   var plugins = options.use || options.u;

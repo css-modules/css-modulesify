@@ -48,9 +48,18 @@ b.bundle();
 ### Options:
 
 - `rootDir`: absolute path to your project's root directory. This is optional but providing it will result in better generated classnames.
-- `output`: path to write the generated css
-- `json`: optional path to write a json manifest of classnames
-- `use`: optional array of postcss plugins (by default we use the css-modules core plugins)
+- `output`: path to write the generated css.
+- `jsonOutput`: optional path to write a json manifest of classnames.
+- `use`: optional array of postcss plugins (by default we use the css-modules core plugins).
+
+## Using CSS Modules on the backend
+
+If you want to use CSS Modules in server-generated templates there are a couple of options:
+
+- Option A (nodejs only): register the [require-hook](https://github.com/css-modules/css-modules-require-hook) so that `var styles = require('./foo.css')` operates the same way as on the frontend. Make sure that the `rootDir` option matches to guarantee that the classnames are the same.
+
+- Option B: configure the `jsonOutput` option with a file path and `css-modulesify` will generate a JSON manifest of classnames.
+
 
 ## PostCSS Plugins
 
@@ -71,11 +80,8 @@ In addition you may also wish to configure defined PostCSS plugins by passing `-
 An example of this would be:
 
 ```
-browserify -p [css-modulesify -u postcss-modules-local-by-default \
-  -u postcss-modules-extract-imports \
-  -u postcss-modules-scope \
-  -u postcss-color-rebeccapurple \
-  -u autoprefixer --autoprefixer.browsers '> 5%' \
+browserify -p [css-modulesify \
+  --after autoprefixer --autoprefixer.browsers '> 5%' \
   -o dist/main.css] -o dist/index.js src/index.js
 ```
 
