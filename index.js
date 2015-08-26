@@ -18,16 +18,39 @@ function createScopedNameFunc (plugin) {
   }
 };
 
+/*
+
+  Normalize the manifest paths so that they are always relative
+  to the project root directory.
+
+*/
+function normalizeManifestPaths (tokensByFile, rootDir) {
+  var output = {};
+  var rootDirLength = rootDir.length + 1;
+
+  Object.keys(tokensByFile).forEach(function (filename) {
+    var normalizedFilename = filename.substr(rootDirLength);
+    output[normalizedFilename] = tokensByFile[filename];
+  });
+
+  return output;
+}
+
 var cssExt = /\.css$/;
 module.exports = function (browserify, options) {
   options = options || {};
 
-  var rootDir = options.rootDir || options.d || '/';
+  // if no root directory is specified, assume the cwd
+  var rootDir = options.rootDir || options.d;
+  if (rootDir) { rootDir = path.resolve(rootDir); }
+  if (!rootDir) { rootDir = process.cwd(); }
 
   var cssOutFilename = options.output || options.o;
   if (!cssOutFilename) {
     throw new Error('css-modulesify needs the --output / -o option (path to output css file)');
   }
+
+  var jsonOutFilename = options.json || options.jsonOutput;
 
   // PostCSS plugins passed to FileSystemLoader
   var plugins = options.use || options.u;
@@ -131,6 +154,15 @@ module.exports = function (browserify, options) {
           browserify.emit('error', err);
         }
       });
+
+      // write the classname manifest
+      if (jsonOutFilename) {
+        fs.writeFile(jsonOutFilename, JSON.stringify(normalizeManifestPaths(tokensByFile, rootDir)), function (err) {
+          if (err) {
+            browserify.emit('error', err);
+          }
+        });
+      }
     });
   });
 
