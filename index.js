@@ -140,9 +140,6 @@ module.exports = function (browserify, options) {
 
   browserify.on('bundle', function(bundle) {
     bundle.on('end', function() {
-      // reset the `tokensByFile` cache
-      tokensByFile = {};
-
       // Combine the collected sources into a single CSS file
       var css = Object.keys(sourceByFile).map(function(file) {
         return sourceByFile[file];
@@ -163,6 +160,9 @@ module.exports = function (browserify, options) {
           }
         });
       }
+
+      // reset the `tokensByFile` cache
+      tokensByFile = {};
     });
   });
 
