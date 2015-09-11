@@ -8,11 +8,6 @@ var path = require('path');
 var casesDir = path.join(__dirname, 'cases');
 var cssOutFilename = 'out.css';
 
-// test cases are expected to have:
-// - main.js (entry point)
-// - expected.css (what to expect from css-modulesify output)
-fs.readdirSync(path.join(__dirname, 'cases')).forEach(runTestCase);
-
 function runTestCase (dir) {
   tape('case: ' + dir, function (t) {
     var fakeFs = {
@@ -32,11 +27,11 @@ function runTestCase (dir) {
     var b = browserify();
     b.add(path.join(casesDir, dir, 'main.js'));
     b.plugin(cssModulesify, {
-      rootDir: path.join(casesDir, dir),
-      output: cssOutFilename
+      rootDir: path.join(casesDir, dir)
+      , output: cssOutFilename
     });
 
-    b.bundle(function (err, buf) {
+    b.bundle(function (err) {
       if (err) {
         console.error(err);
         return t.fail('Unexpected error');
@@ -46,3 +41,8 @@ function runTestCase (dir) {
     });
   });
 }
+
+// test cases are expected to have:
+// - main.js (entry point)
+// - expected.css (what to expect from css-modulesify output)
+fs.readdirSync(path.join(__dirname, 'cases')).forEach(runTestCase);

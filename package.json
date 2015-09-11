@@ -11,12 +11,14 @@
   },
   "devDependencies": {
     "browserify": "^11.0.1",
+    "eslint": "^1.4.0",
     "proxyquire": "^1.6.0",
     "rebundler": "^0.2.0",
     "tape": "^4.0.1"
   },
   "scripts": {
-    "test": "tape tests/*.js"
+    "test": "tape tests/*.js",
+    "lint": "eslint index.js tests/"
   },
   "author": "joshwnj",
   "license": "MIT",
