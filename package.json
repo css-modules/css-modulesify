@@ -16,7 +16,8 @@
     "tape": "^4.0.1"
   },
   "scripts": {
-    "test": "tape tests/*.js"
+    "test": "tape tests/*.js",
+    "lint": "eslint index.js tests/"
   },
   "author": "joshwnj",
   "license": "MIT",
