@@ -37,6 +37,22 @@ function normalizeManifestPaths (tokensByFile, rootDir) {
 }
 
 var cssExt = /\.css$/;
+
+// caches
+//
+// persist these for as long as the process is running. #32
+
+// keep track of css files visited
+var filenames = [];
+
+// keep track of all tokens so we can avoid duplicates
+var tokensByFile = {};
+
+// keep track of all source files for later builds: when
+// using watchify, not all files will be caught on subsequent
+// bundles
+var sourceByFile = {};
+
 module.exports = function (browserify, options) {
   options = options || {};
 
@@ -90,17 +106,6 @@ module.exports = function (browserify, options) {
 
     return plugin;
   });
-
-  // keep track of css files visited
-  var filenames = [];
-
-  // keep track of all tokens so we can avoid duplicates
-  var tokensByFile = {};
-
-  // keep track of all source files for later builds: when
-  // using watchify, not all files will be caught on subsequent
-  // bundles
-  var sourceByFile = {};
 
   function transform (filename) {
     // only handle .css files
