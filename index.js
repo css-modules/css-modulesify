@@ -12,11 +12,11 @@ var stringHash = require('string-hash');
 */
 function createScopedNameFunc (plugin) {
   var orig = plugin.generateScopedName;
-  return function (name, path, css) {
+  return function (name, filename, css) {
     var hash = stringHash(css).toString(36).substr(0, 5);
     return orig.apply(plugin, arguments) + '___' + hash;
-  }
-};
+  };
+}
 
 /*
 
@@ -56,9 +56,10 @@ module.exports = function (browserify, options) {
   var plugins = options.use || options.u;
   if (!plugins) {
     plugins = Core.defaultPlugins;
-  } else {
+  }
+  else {
     if (typeof plugins === 'string') {
-      plugins = [ plugins ];
+      plugins = [plugins];
     }
   }
 
@@ -84,7 +85,8 @@ module.exports = function (browserify, options) {
 
     if (name in options) {
       plugin = plugin(options[name]);
-    } else {
+    }
+    else {
       plugin = plugin.postcss || plugin();
     }
 
@@ -119,7 +121,7 @@ module.exports = function (browserify, options) {
       loader.tokensByFile = tokensByFile;
 
       loader.fetch(path.relative(rootDir, filename), '/').then(function (tokens) {
-        var output = "module.exports = " + JSON.stringify(tokens);
+        var output = 'module.exports = ' + JSON.stringify(tokens);
 
         assign(tokensByFile, loader.tokensByFile);
 
@@ -138,13 +140,12 @@ module.exports = function (browserify, options) {
     global: true
   });
 
-  browserify.on('bundle', function(bundle) {
-    bundle.on('end', function() {
+  browserify.on('bundle', function (bundle) {
+    bundle.on('end', function () {
       // Combine the collected sources into a single CSS file
-      var css = Object.keys(sourceByFile).map(function(file) {
+      var css = Object.keys(sourceByFile).map(function (file) {
         return sourceByFile[file];
       }).join('\n');
-      var args = arguments;
 
       fs.writeFile(cssOutFilename, css, function (err) {
         if (err) {
