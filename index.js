@@ -136,7 +136,7 @@ module.exports = function (browserify, options) {
         self.queue(output);
         self.queue(null);
       }, function (err) {
-        browserify.emit('error', err);
+        self.emit('error', err);
       });
     });
   }
