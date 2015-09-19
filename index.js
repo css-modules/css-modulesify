@@ -25,7 +25,7 @@ function generateShortName (name, filename, css) {
   Custom `generateScopedName` function for `postcss-modules-scope`.
   Appends a hash of the css source.
 */
-function generateLongName (name, filename, css) {
+function generateLongName (name, filename) {
   var sanitisedPath = filename.replace(/\.[^\.\/\\]+$/, '')
       .replace(/[\W_]+/g, '_')
       .replace(/^_|_$/g, '');
