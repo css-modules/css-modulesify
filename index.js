@@ -30,8 +30,7 @@ function generateLongName (name, filename, css) {
       .replace(/[\W_]+/g, '_')
       .replace(/^_|_$/g, '');
 
-  var hash = stringHash(css).toString(36).substr(0, 5);
-  return '_' + sanitisedPath + '__' + name + '___' + hash;
+  return '_' + sanitisedPath + '__' + name;
 }
 
 /*
