@@ -29,6 +29,7 @@ function runTestCase (dir) {
     b.plugin(cssModulesify, {
       rootDir: path.join(casesDir, dir)
       , output: cssOutFilename
+      , generateScopedName: cssModulesify.generateLongName
     });
 
     b.bundle(function (err) {

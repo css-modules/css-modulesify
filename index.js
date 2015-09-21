@@ -6,16 +6,50 @@ var FileSystemLoader = require('css-modules-loader-core/lib/file-system-loader')
 var assign = require('object-assign');
 var stringHash = require('string-hash');
 
+
+/*
+  Custom `generateScopedName` function for `postcss-modules-scope`.
+  Short names consisting of source hash and line number.
+*/
+function generateShortName (name, filename, css) {
+  // first occurrence of the name
+  // TOOD: better match with regex
+  var i = css.indexOf('.' + name);
+  var numLines = css.substr(0, i).split(/[\r\n]/).length;
+
+  var hash = stringHash(css).toString(36).substr(0, 5);
+  return '_' + name + '_' + hash + '_' + numLines;
+}
+
 /*
   Custom `generateScopedName` function for `postcss-modules-scope`.
   Appends a hash of the css source.
 */
-function createScopedNameFunc (plugin) {
-  var orig = plugin.generateScopedName;
-  return function (name, filename, css) {
-    var hash = stringHash(css).toString(36).substr(0, 5);
-    return orig.apply(plugin, arguments) + '___' + hash;
-  };
+function generateLongName (name, filename) {
+  var sanitisedPath = filename.replace(/\.[^\.\/\\]+$/, '')
+      .replace(/[\W_]+/g, '_')
+      .replace(/^_|_$/g, '');
+
+  return '_' + sanitisedPath + '__' + name;
+}
+
+/*
+  Get the default plugins and apply options.
+*/
+function getDefaultPlugins (options) {
+  var scope = Core.scope;
+  var customNameFunc = options.generateScopedName;
+  var defaultNameFunc = process.env.NODE_ENV === 'production' ?
+      generateShortName :
+      generateLongName;
+
+  scope.generateScopedName = customNameFunc || defaultNameFunc;
+
+  return [
+    Core.localByDefault
+    , Core.extractImports
+    , scope
+  ];
 }
 
 /*
@@ -71,7 +105,7 @@ module.exports = function (browserify, options) {
   // PostCSS plugins passed to FileSystemLoader
   var plugins = options.use || options.u;
   if (!plugins) {
-    plugins = Core.defaultPlugins;
+    plugins = getDefaultPlugins(options);
   }
   else {
     if (typeof plugins === 'string') {
@@ -95,7 +129,7 @@ module.exports = function (browserify, options) {
     if (name === 'postcss-modules-scope') {
       options[name] = options[name] || {};
       if (!options[name].generateScopedName) {
-        options[name].generateScopedName = createScopedNameFunc(plugin);
+        options[name].generateScopedName = generateLongName;
       }
     }
 
@@ -174,3 +208,6 @@ module.exports = function (browserify, options) {
 
   return browserify;
 };
+
+module.exports.generateShortName = generateShortName;
+module.exports.generateLongName = generateLongName;

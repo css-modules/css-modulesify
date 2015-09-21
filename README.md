@@ -51,6 +51,7 @@ b.bundle();
 - `output`: path to write the generated css.
 - `jsonOutput`: optional path to write a json manifest of classnames.
 - `use`: optional array of postcss plugins (by default we use the css-modules core plugins).
+- `generateScopedName`: (API only) a function to override the default behaviour of creating locally scoped classnames.
 
 ## Using CSS Modules on the backend
 
@@ -88,6 +89,20 @@ browserify -p [css-modulesify \
 [postcss-modules-local-by-default]: https://github.com/css-modules/postcss-modules-local-by-default
 [postcss-modules-extract-imports]: https://github.com/css-modules/postcss-modules-extract-imports
 [postcss-modules-scope]: https://github.com/css-modules/postcss-modules-scope
+
+## Building for production
+
+If you set `NODE_ENV=production` then `css-modulesify` will generate shorter (though less useful) classnames.
+
+You can also manually switch to short names by setting the `generateScopedName` option. Eg:
+
+```
+browserify.plugin(cssModulesify, {
+  rootDir: __dirname,
+  output: './dist/main.css',
+  generateScopedName: cssModulesify.generateShortName
+})
+```
 
 ## Example
 
