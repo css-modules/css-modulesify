@@ -46,7 +46,8 @@ function getDefaultPlugins (options) {
   scope.generateScopedName = customNameFunc || defaultNameFunc;
 
   return [
-    Core.localByDefault
+    Core.values
+    , Core.localByDefault
     , Core.extractImports
     , scope
   ];
