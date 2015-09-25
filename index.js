@@ -1,3 +1,6 @@
+// Some css-modules-loader-code dependencies use Promise so we'll provide it for older node versions
+if (!global.Promise) { global.Promise = require('promise-polyfill') }
+
 var fs = require('fs');
 var path = require('path');
 var through = require('through');
@@ -5,7 +8,6 @@ var Core = require('css-modules-loader-core');
 var FileSystemLoader = require('css-modules-loader-core/lib/file-system-loader');
 var assign = require('object-assign');
 var stringHash = require('string-hash');
-
 
 /*
   Custom `generateScopedName` function for `postcss-modules-scope`.
