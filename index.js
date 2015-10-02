@@ -152,12 +152,9 @@ module.exports = function (browserify, options) {
     // collect visited filenames
     filenames.push(filename);
 
+    var loader = new FileSystemLoader(rootDir, plugins);
     return through(function noop () {}, function end () {
       var self = this;
-      var loader = new FileSystemLoader(rootDir, plugins);
-
-      // pre-populate the loader's tokensByFile
-      loader.tokensByFile = tokensByFile;
 
       loader.fetch(path.relative(rootDir, filename), '/').then(function (tokens) {
         var output = 'module.exports = ' + JSON.stringify(tokens);
