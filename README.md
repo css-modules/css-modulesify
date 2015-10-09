@@ -45,13 +45,32 @@ b.plugin(require('css-modulesify'), {
 b.bundle();
 ```
 
+```js
+// or, get the output as a stream
+var b = require('browserify')();
+var fs = require('fs');
+
+b.add('./main.js');
+b.plugin(require('css-modulesify'), {
+  rootDir: __dirname
+});
+
+var bundle = b.bundle()
+bundle.on('css stream', function (css) {
+  css.pipe(fs.createWriteStream('mycss.css'));
+});
+```
+
 ### Options:
 
 - `rootDir`: absolute path to your project's root directory. This is optional but providing it will result in better generated classnames.
-- `output`: path to write the generated css.
+- `output`: path to write the generated css. If not provided, you'll need to listen to the `'css stream'` event on the bundle to get the output.
 - `jsonOutput`: optional path to write a json manifest of classnames.
 - `use`: optional array of postcss plugins (by default we use the css-modules core plugins).
 - `generateScopedName`: (API only) a function to override the default behaviour of creating locally scoped classnames.
+
+### Events
+- `b.bundle().on('css stream', callback)` The callback is called with a readable stream containing the compiled CSS. You can write this to a file.
 
 ## Using CSS Modules on the backend
 
