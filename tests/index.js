@@ -34,8 +34,7 @@ function runTestCase (dir) {
 
     b.bundle(function (err) {
       if (err) {
-        console.error(err);
-        return t.fail('Unexpected error');
+        t.error(err, 'should not error');
       }
 
       t.end();

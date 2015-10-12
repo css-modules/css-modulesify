@@ -5,6 +5,7 @@ var Core = require('css-modules-loader-core');
 var FileSystemLoader = require('css-modules-loader-core/lib/file-system-loader');
 var assign = require('object-assign');
 var stringHash = require('string-hash');
+var ReadableStream = require('stream').Readable;
 
 
 /*
@@ -96,10 +97,6 @@ module.exports = function (browserify, options) {
   if (!rootDir) { rootDir = process.cwd(); }
 
   var cssOutFilename = options.output || options.o;
-  if (!cssOutFilename) {
-    throw new Error('css-modulesify needs the --output / -o option (path to output css file)');
-  }
-
   var jsonOutFilename = options.json || options.jsonOutput;
 
   // PostCSS plugins passed to FileSystemLoader
@@ -143,6 +140,10 @@ module.exports = function (browserify, options) {
     return plugin;
   });
 
+  // the compiled CSS stream needs to be avalible to the transform,
+  // but re-created on each bundle call.
+  var compiledCssStream;
+
   function transform (filename) {
     // only handle .css files
     if (!cssExt.test(filename)) {
@@ -164,6 +165,8 @@ module.exports = function (browserify, options) {
         // store this file's source to be written out to disk later
         sourceByFile[filename] = loader.finalSource;
 
+        compiledCssStream.push(loader.finalSource);
+
         self.queue(output);
         self.queue(null);
       }, function (err) {
@@ -177,17 +180,32 @@ module.exports = function (browserify, options) {
   });
 
   browserify.on('bundle', function (bundle) {
+    // on each bundle, create a new stream b/c the old one might have ended
+    compiledCssStream = new ReadableStream();
+    compiledCssStream._read = function () {};
+
+    bundle.emit('css stream', compiledCssStream);
+
     bundle.on('end', function () {
       // Combine the collected sources into a single CSS file
-      var css = Object.keys(sourceByFile).map(function (file) {
-        return sourceByFile[file];
-      }).join('\n');
+      var files = Object.keys(sourceByFile);
+      var css;
 
-      fs.writeFile(cssOutFilename, css, function (err) {
-        if (err) {
-          browserify.emit('error', err);
-        }
-      });
+      // end the output stream
+      compiledCssStream.push(null);
+
+      // write the css file
+      if (cssOutFilename) {
+        css = files.map(function (file) {
+          return sourceByFile[file];
+        }).join('\n');
+
+        fs.writeFile(cssOutFilename, css, function (err) {
+          if (err) {
+            browserify.emit('error', err);
+          }
+        });
+      }
 
       // write the classname manifest
       if (jsonOutFilename) {
