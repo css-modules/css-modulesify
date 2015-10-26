@@ -101,6 +101,11 @@ module.exports = function (browserify, options) {
 
   var cssOutFilename = options.output || options.o;
   var jsonOutFilename = options.json || options.jsonOutput;
+  var sourceKey = cssOutFilename;
+
+  // keying our source caches by the name of our output file means we can
+  // isolate css compilation of seperate bundles that are running in parallel
+  sourceByFile[sourceKey] = sourceByFile[sourceKey] || {};
 
   // PostCSS plugins passed to FileSystemLoader
   var plugins = options.use || options.u;
@@ -166,7 +171,7 @@ module.exports = function (browserify, options) {
         assign(tokensByFile, loader.tokensByFile);
 
         // store this file's source to be written out to disk later
-        sourceByFile[filename] = loader.finalSource;
+        sourceByFile[sourceKey][filename] = loader.finalSource;
 
         compiledCssStream.push(loader.finalSource);
 
@@ -190,8 +195,8 @@ module.exports = function (browserify, options) {
     bundle.emit('css stream', compiledCssStream);
 
     bundle.on('end', function () {
-      // Combine the collected sources into a single CSS file
-      var files = Object.keys(sourceByFile);
+      // Combine the collected sources for a single bundle into a single CSS file
+      var files = Object.keys(sourceByFile[sourceKey]);
       var css;
 
       // end the output stream
@@ -200,7 +205,7 @@ module.exports = function (browserify, options) {
       // write the css file
       if (cssOutFilename) {
         css = files.map(function (file) {
-          return sourceByFile[file];
+          return sourceByFile[sourceKey][file];
         }).join('\n');
 
         fs.writeFile(cssOutFilename, css, function (err) {
