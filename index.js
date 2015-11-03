@@ -1,3 +1,5 @@
+if (!global.Promise) { global.Promise = require('promise-polyfill'); }
+
 var fs = require('fs');
 var path = require('path');
 var through = require('through');
