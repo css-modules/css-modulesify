@@ -80,16 +80,11 @@ var cssExt = /\.css$/;
 //
 // persist these for as long as the process is running. #32
 
-// keep track of css files visited
-var filenames = [];
-
 // keep track of all tokens so we can avoid duplicates
 var tokensByFile = {};
 
-// keep track of all source files for later builds: when
-// using watchify, not all files will be caught on subsequent
-// bundles
-var sourceByFile = {};
+// we need a separate loader for each entry point
+var loadersByFile = {};
 
 module.exports = function (browserify, options) {
   options = options || {};
@@ -103,9 +98,10 @@ module.exports = function (browserify, options) {
   var jsonOutFilename = options.json || options.jsonOutput;
   var sourceKey = cssOutFilename;
 
-  // keying our source caches by the name of our output file means we can
-  // isolate css compilation of seperate bundles that are running in parallel
-  sourceByFile[sourceKey] = sourceByFile[sourceKey] || {};
+  var loader = loadersByFile[sourceKey];
+  if (!loader) {
+      loader = loadersByFile[sourceKey] = new FileSystemLoader(rootDir, plugins);
+  }
 
   // PostCSS plugins passed to FileSystemLoader
   var plugins = options.use || options.u;
@@ -158,10 +154,6 @@ module.exports = function (browserify, options) {
       return through();
     }
 
-    // collect visited filenames
-    filenames.push(filename);
-
-    var loader = new FileSystemLoader(rootDir, plugins);
     return through(function noop () {}, function end () {
       var self = this;
 
@@ -169,11 +161,6 @@ module.exports = function (browserify, options) {
         var output = 'module.exports = ' + JSON.stringify(tokens);
 
         assign(tokensByFile, loader.tokensByFile);
-
-        // store this file's source to be written out to disk later
-        sourceByFile[sourceKey][filename] = loader.finalSource;
-
-        compiledCssStream.push(loader.finalSource);
 
         self.queue(output);
         self.queue(null);
@@ -196,18 +183,14 @@ module.exports = function (browserify, options) {
 
     bundle.on('end', function () {
       // Combine the collected sources for a single bundle into a single CSS file
-      var files = Object.keys(sourceByFile[sourceKey]);
-      var css;
+      var css = loader.finalSource;
 
       // end the output stream
+      compiledCssStream.push(css);
       compiledCssStream.push(null);
 
       // write the css file
       if (cssOutFilename) {
-        css = files.map(function (file) {
-          return sourceByFile[sourceKey][file];
-        }).join('\n');
-
         fs.writeFile(cssOutFilename, css, function (err) {
           if (err) {
             browserify.emit('error', err);
