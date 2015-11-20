@@ -1,0 +1,4 @@
+.foo {
+  composes: shared from "./shared.css";
+  color: #F00;
+}

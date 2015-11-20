@@ -1,0 +1,4 @@
+.bar {
+  composes: shared from "./shared.css";
+  background: #BAA;
+}

@@ -74,6 +74,19 @@ function normalizeManifestPaths (tokensByFile, rootDir) {
   return output;
 }
 
+function dedupeSources (sources) {
+  var foundHashes = {}
+  Object.keys(sources).forEach(function (key) {
+    var hash = stringHash(sources[key]);
+    if (foundHashes[hash]) {
+      delete sources[key];
+    }
+    else {
+      foundHashes[hash] = true;
+    }
+  })
+}
+
 var cssExt = /\.css$/;
 
 // caches
@@ -182,6 +195,10 @@ module.exports = function (browserify, options) {
     bundle.emit('css stream', compiledCssStream);
 
     bundle.on('end', function () {
+      // under certain conditions (eg. with shared libraries) we can end up with
+      // multiple occurrences of the same rule, so we need to remove duplicates
+      dedupeSources(loader.sources)
+
       // Combine the collected sources for a single bundle into a single CSS file
       var css = loader.finalSource;
 
