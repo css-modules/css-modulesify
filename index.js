@@ -3,7 +3,7 @@ if (!global.Promise) { global.Promise = require('promise-polyfill') }
 
 var fs = require('fs');
 var path = require('path');
-var through = require('through');
+var Cmify = require('./cmify');
 var Core = require('css-modules-loader-core');
 var FileSystemLoader = require('css-modules-loader-core/lib/file-system-loader');
 var assign = require('object-assign');
@@ -87,8 +87,6 @@ function dedupeSources (sources) {
   })
 }
 
-var cssExt = /\.css$/;
-
 // caches
 //
 // persist these for as long as the process is running. #32
@@ -161,31 +159,43 @@ module.exports = function (browserify, options) {
   // but re-created on each bundle call.
   var compiledCssStream;
 
-  function transform (filename) {
+  // TODO: clean this up so there's less scope crossing
+  Cmify.prototype._flush = function (callback) {
+    var self = this;
+    var filename = this._filename;
+
     // only handle .css files
-    if (!cssExt.test(filename)) {
-      return through();
-    }
+    if (!this.isCssFile(filename)) { return callback(); }
 
-    return through(function noop () {}, function end () {
-      var self = this;
+    // convert css to js before pushing
+    // reset the `tokensByFile` cache
+    var relFilename = path.relative(rootDir, filename)
+    tokensByFile[filename] = loader.tokensByFile[filename] = null;
 
-      loader.fetch(path.relative(rootDir, filename), '/').then(function (tokens) {
-        var output = 'module.exports = ' + JSON.stringify(tokens);
+    loader.fetch(relFilename, '/').then(function (tokens) {
+      var newFiles = Object.keys(loader.tokensByFile)
+      var oldFiles = Object.keys(tokensByFile)
+      var diff = newFiles.filter(function (f) {
+        return oldFiles.indexOf(f) === -1
+      })
 
-        assign(tokensByFile, loader.tokensByFile);
+      var output = diff.map(function (f) {
+        return "require('" + f + "')\n"
+      }) + '\n\n' + 'module.exports = ' + JSON.stringify(tokens);
 
-        self.queue(output);
-        self.queue(null);
-      }, function (err) {
-        self.emit('error', err);
-      });
+      assign(tokensByFile, loader.tokensByFile);
+
+      self.push(output);
+      return callback()
+    }, function (err) {
+      browserify.emit('error', err);
+      return callback()
     });
-  }
+  };
 
-  browserify.transform(transform, {
-    global: true
-  });
+  browserify.transform(Cmify);
+
+  // ----
 
   browserify.on('bundle', function (bundle) {
     // on each bundle, create a new stream b/c the old one might have ended
@@ -223,9 +233,6 @@ module.exports = function (browserify, options) {
           }
         });
       }
-
-      // reset the `tokensByFile` cache
-      tokensByFile = {};
     });
   });
 
