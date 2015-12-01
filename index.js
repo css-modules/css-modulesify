@@ -5,7 +5,7 @@ var fs = require('fs');
 var path = require('path');
 var Cmify = require('./cmify');
 var Core = require('css-modules-loader-core');
-var FileSystemLoader = require('css-modules-loader-core/lib/file-system-loader');
+var FileSystemLoader = require('./file-system-loader');
 var assign = require('object-assign');
 var stringHash = require('string-hash');
 var ReadableStream = require('stream').Readable;
@@ -16,7 +16,7 @@ var ReadableStream = require('stream').Readable;
 */
 function generateShortName (name, filename, css) {
   // first occurrence of the name
-  // TOOD: better match with regex
+  // TODO: better match with regex
   var i = css.indexOf('.' + name);
   var numLines = css.substr(0, i).split(/[\r\n]/).length;
 
@@ -74,19 +74,6 @@ function normalizeManifestPaths (tokensByFile, rootDir) {
   return output;
 }
 
-function dedupeSources (sources) {
-  var foundHashes = {}
-  Object.keys(sources).forEach(function (key) {
-    var hash = stringHash(sources[key]);
-    if (foundHashes[hash]) {
-      delete sources[key];
-    }
-    else {
-      foundHashes[hash] = true;
-    }
-  })
-}
-
 // caches
 //
 // persist these for as long as the process is running. #32
@@ -104,6 +91,11 @@ module.exports = function (browserify, options) {
   var rootDir = options.rootDir || options.d;
   if (rootDir) { rootDir = path.resolve(rootDir); }
   if (!rootDir) { rootDir = process.cwd(); }
+
+  var transformOpts = {};
+  if (options.global) {
+    transformOpts.global = true;
+  }
 
   var cssOutFilename = options.output || options.o;
   var jsonOutFilename = options.json || options.jsonOutput;
@@ -173,13 +165,8 @@ module.exports = function (browserify, options) {
     tokensByFile[filename] = loader.tokensByFile[filename] = null;
 
     loader.fetch(relFilename, '/').then(function (tokens) {
-      var newFiles = Object.keys(loader.tokensByFile)
-      var oldFiles = Object.keys(tokensByFile)
-      var diff = newFiles.filter(function (f) {
-        return oldFiles.indexOf(f) === -1
-      })
-
-      var output = diff.map(function (f) {
+      var deps = loader.deps.dependenciesOf(filename);
+      var output = deps.map(function (f) {
         return "require('" + f + "')\n"
       }) + '\n\n' + 'module.exports = ' + JSON.stringify(tokens);
 
@@ -193,7 +180,7 @@ module.exports = function (browserify, options) {
     });
   };
 
-  browserify.transform(Cmify);
+  browserify.transform(Cmify, transformOpts);
 
   // ----
 
@@ -205,10 +192,6 @@ module.exports = function (browserify, options) {
     bundle.emit('css stream', compiledCssStream);
 
     bundle.on('end', function () {
-      // under certain conditions (eg. with shared libraries) we can end up with
-      // multiple occurrences of the same rule, so we need to remove duplicates
-      dedupeSources(loader.sources)
-
       // Combine the collected sources for a single bundle into a single CSS file
       var css = loader.finalSource;
 
