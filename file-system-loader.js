@@ -115,14 +115,14 @@ var FileSystemLoader = (function () {
     get: function () {
       var traces = this.traces;
       var sources = this.sources;
-      var written = new Set();
+      var written = {};
 
       return Object.keys(traces).sort(traceKeySorter).map(function (key) {
         var filename = traces[key];
-        if (written.has(filename)) {
+        if (written[filename] === true) {
           return null;
         }
-        written.add(filename);
+        written[filename] = true;
 
         return sources[filename];
       }).join('');
