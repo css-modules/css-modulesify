@@ -101,11 +101,6 @@ module.exports = function (browserify, options) {
   var jsonOutFilename = options.json || options.jsonOutput;
   var sourceKey = cssOutFilename;
 
-  var loader = loadersByFile[sourceKey];
-  if (!loader) {
-      loader = loadersByFile[sourceKey] = new FileSystemLoader(rootDir, plugins);
-  }
-
   // PostCSS plugins passed to FileSystemLoader
   var plugins = options.use || options.u;
   if (!plugins) {
@@ -146,6 +141,12 @@ module.exports = function (browserify, options) {
 
     return plugin;
   });
+
+  // get (or create) a loader for this entry file
+  var loader = loadersByFile[sourceKey];
+  if (!loader) {
+      loader = loadersByFile[sourceKey] = new FileSystemLoader(rootDir, plugins);
+  }
 
   // the compiled CSS stream needs to be avalible to the transform,
   // but re-created on each bundle call.
