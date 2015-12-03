@@ -8,6 +8,8 @@ var path = require('path');
 var casesDir = path.join(__dirname, 'cases');
 var cssOutFilename = 'out.css';
 
+var globalCases = ['compose-node-module', 'import-node-module'];
+
 function runTestCase (dir) {
   tape('case: ' + dir, function (t) {
     var fakeFs = {
@@ -30,6 +32,9 @@ function runTestCase (dir) {
       rootDir: path.join(casesDir, dir)
       , output: cssOutFilename
       , generateScopedName: cssModulesify.generateLongName
+
+      // only certain cases will use a global transform
+      , global: globalCases.indexOf(dir) !== -1
     });
 
     b.bundle(function (err) {

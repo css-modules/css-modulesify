@@ -3,9 +3,9 @@ if (!global.Promise) { global.Promise = require('promise-polyfill') }
 
 var fs = require('fs');
 var path = require('path');
-var through = require('through');
+var Cmify = require('./cmify');
 var Core = require('css-modules-loader-core');
-var FileSystemLoader = require('css-modules-loader-core/lib/file-system-loader');
+var FileSystemLoader = require('./file-system-loader');
 var assign = require('object-assign');
 var stringHash = require('string-hash');
 var ReadableStream = require('stream').Readable;
@@ -16,7 +16,7 @@ var ReadableStream = require('stream').Readable;
 */
 function generateShortName (name, filename, css) {
   // first occurrence of the name
-  // TOOD: better match with regex
+  // TODO: better match with regex
   var i = css.indexOf('.' + name);
   var numLines = css.substr(0, i).split(/[\r\n]/).length;
 
@@ -74,21 +74,6 @@ function normalizeManifestPaths (tokensByFile, rootDir) {
   return output;
 }
 
-function dedupeSources (sources) {
-  var foundHashes = {}
-  Object.keys(sources).forEach(function (key) {
-    var hash = stringHash(sources[key]);
-    if (foundHashes[hash]) {
-      delete sources[key];
-    }
-    else {
-      foundHashes[hash] = true;
-    }
-  })
-}
-
-var cssExt = /\.css$/;
-
 // caches
 //
 // persist these for as long as the process is running. #32
@@ -106,6 +91,11 @@ module.exports = function (browserify, options) {
   var rootDir = options.rootDir || options.d;
   if (rootDir) { rootDir = path.resolve(rootDir); }
   if (!rootDir) { rootDir = process.cwd(); }
+
+  var transformOpts = {};
+  if (options.global) {
+    transformOpts.global = true;
+  }
 
   var cssOutFilename = options.output || options.o;
   var jsonOutFilename = options.json || options.jsonOutput;
@@ -161,31 +151,56 @@ module.exports = function (browserify, options) {
   // but re-created on each bundle call.
   var compiledCssStream;
 
-  function transform (filename) {
+  // TODO: clean this up so there's less scope crossing
+  Cmify.prototype._flush = function (callback) {
+    var self = this;
+    var filename = this._filename;
+
     // only handle .css files
-    if (!cssExt.test(filename)) {
-      return through();
-    }
+    if (!this.isCssFile(filename)) { return callback(); }
 
-    return through(function noop () {}, function end () {
-      var self = this;
+    // convert css to js before pushing
+    // reset the `tokensByFile` cache
+    var relFilename = path.relative(rootDir, filename)
+    tokensByFile[filename] = loader.tokensByFile[filename] = null;
 
-      loader.fetch(path.relative(rootDir, filename), '/').then(function (tokens) {
-        var output = 'module.exports = ' + JSON.stringify(tokens);
+    loader.fetch(relFilename, '/').then(function (tokens) {
+      var deps = loader.deps.dependenciesOf(filename);
+      var output = [
+        deps.map(function (f) {
+          return "require('" + f + "')"
+        }).join('\n'),
+        'module.exports = ' + JSON.stringify(tokens)
+      ].join('\n');
 
-        assign(tokensByFile, loader.tokensByFile);
-
-        self.queue(output);
-        self.queue(null);
-      }, function (err) {
-        self.emit('error', err);
+      var isValid = true;
+      var isUndefined = /\bundefined\b/;
+      Object.keys(tokens).forEach(function (k) {
+        if (isUndefined.test(tokens[k])) {
+          isValid = false;
+        }
       });
-    });
-  }
 
-  browserify.transform(transform, {
-    global: true
-  });
+      if (!isValid) {
+        var err = 'Composition in ' + filename + ' contains an undefined reference';
+        console.error(err)
+        output += '\nconsole.error("' + err + '");';
+      }
+
+      assign(tokensByFile, loader.tokensByFile);
+
+      self.push(output);
+      return callback()
+    }).catch(function (err) {
+      self.push('console.error("' + err + '");');
+      browserify.emit('error', err);
+      return callback()
+    });
+  };
+
+  browserify.transform(Cmify, transformOpts);
+
+  // ----
 
   browserify.on('bundle', function (bundle) {
     // on each bundle, create a new stream b/c the old one might have ended
@@ -195,10 +210,6 @@ module.exports = function (browserify, options) {
     bundle.emit('css stream', compiledCssStream);
 
     bundle.on('end', function () {
-      // under certain conditions (eg. with shared libraries) we can end up with
-      // multiple occurrences of the same rule, so we need to remove duplicates
-      dedupeSources(loader.sources)
-
       // Combine the collected sources for a single bundle into a single CSS file
       var css = loader.finalSource;
 
@@ -223,9 +234,6 @@ module.exports = function (browserify, options) {
           }
         });
       }
-
-      // reset the `tokensByFile` cache
-      tokensByFile = {};
     });
   });
 
