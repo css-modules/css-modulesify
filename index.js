@@ -166,15 +166,33 @@ module.exports = function (browserify, options) {
 
     loader.fetch(relFilename, '/').then(function (tokens) {
       var deps = loader.deps.dependenciesOf(filename);
-      var output = deps.map(function (f) {
-        return "require('" + f + "')\n"
-      }) + '\n\n' + 'module.exports = ' + JSON.stringify(tokens);
+      var output = [
+        deps.map(function (f) {
+          return "require('" + f + "')"
+        }).join('\n'),
+        'module.exports = ' + JSON.stringify(tokens)
+      ].join('\n');
+
+      var isValid = true;
+      var isUndefined = /\bundefined\b/;
+      Object.keys(tokens).forEach(function (k) {
+        if (isUndefined.test(tokens[k])) {
+          isValid = false;
+        }
+      });
+
+      if (!isValid) {
+        var err = 'Composition in ' + filename + ' contains an undefined reference';
+        console.error(err)
+        output += '\nconsole.error("' + err + '");';
+      }
 
       assign(tokensByFile, loader.tokensByFile);
 
       self.push(output);
       return callback()
-    }, function (err) {
+    }).catch(function (err) {
+      self.push('console.error("' + err + '");');
       browserify.emit('error', err);
       return callback()
     });
