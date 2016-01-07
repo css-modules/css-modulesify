@@ -88,6 +88,7 @@ The following PostCSS plugins are enabled by default:
   * [postcss-modules-local-by-default]
   * [postcss-modules-extract-imports]
   * [postcss-modules-scope]
+  * [postcss-modules-values]
 
 (i.e. the [CSS Modules] specification).
 
@@ -108,6 +109,7 @@ browserify -p [css-modulesify \
 [postcss-modules-local-by-default]: https://github.com/css-modules/postcss-modules-local-by-default
 [postcss-modules-extract-imports]: https://github.com/css-modules/postcss-modules-extract-imports
 [postcss-modules-scope]: https://github.com/css-modules/postcss-modules-scope
+[postcss-modules-values]: https://github.com/css-modules/postcss-modules-values
 
 ## Building for production
 
