@@ -1,5 +1,5 @@
 // Some css-modules-loader-code dependencies use Promise so we'll provide it for older node versions
-if (!global.Promise) { global.Promise = require('promise-polyfill') }
+if (!global.Promise) { global.Promise = require('promise-polyfill'); }
 
 var fs = require('fs');
 var path = require('path');
@@ -145,7 +145,7 @@ module.exports = function (browserify, options) {
   // get (or create) a loader for this entry file
   var loader = loadersByFile[sourceKey];
   if (!loader) {
-      loader = loadersByFile[sourceKey] = new FileSystemLoader(rootDir, plugins);
+    loader = loadersByFile[sourceKey] = new FileSystemLoader(rootDir, plugins);
   }
 
   // the compiled CSS stream needs to be avalible to the transform,
@@ -162,17 +162,15 @@ module.exports = function (browserify, options) {
 
     // convert css to js before pushing
     // reset the `tokensByFile` cache
-    var relFilename = path.relative(rootDir, filename)
+    var relFilename = path.relative(rootDir, filename);
     tokensByFile[filename] = loader.tokensByFile[filename] = null;
 
     loader.fetch(relFilename, '/').then(function (tokens) {
       var deps = loader.deps.dependenciesOf(filename);
-      var output = [
-        deps.map(function (f) {
-          return "require('" + f + "')"
-        }).join('\n'),
-        'module.exports = ' + JSON.stringify(tokens)
-      ].join('\n');
+      var output = deps.map(function (f) {
+        return 'require("' + f + '")';
+      });
+      output.push('module.exports = ' + JSON.stringify(tokens));
 
       var isValid = true;
       var isUndefined = /\bundefined\b/;
@@ -184,18 +182,18 @@ module.exports = function (browserify, options) {
 
       if (!isValid) {
         var err = 'Composition in ' + filename + ' contains an undefined reference';
-        console.error(err)
-        output += '\nconsole.error("' + err + '");';
+        console.error(err);
+        output.push('console.error("' + err + '");');
       }
 
       assign(tokensByFile, loader.tokensByFile);
 
-      self.push(output);
-      return callback()
+      self.push(output.join('\n'));
+      return callback();
     }).catch(function (err) {
       self.push('console.error("' + err + '");');
       browserify.emit('error', err);
-      return callback()
+      return callback();
     });
   };
 
