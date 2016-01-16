@@ -13,6 +13,7 @@ function Cmify(filename, opts) {
   this.cssExt = /\.css$/;
   this._data = "";
   this._filename = filename;
+  this._cssOutFilename = opts.cssOutFilename;
 }
 
 Cmify.prototype.isCssFile = function (filename) {
