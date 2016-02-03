@@ -1,5 +1,5 @@
 // Some css-modules-loader-code dependencies use Promise so we'll provide it for older node versions
-if (!global.Promise) { global.Promise = require('promise-polyfill') }
+if (!global.Promise) { global.Promise = require('promise-polyfill'); }
 
 var fs = require('fs');
 var path = require('path');
@@ -99,7 +99,7 @@ module.exports = function (browserify, options) {
 
   var cssOutFilename = options.output || options.o;
   var jsonOutFilename = options.json || options.jsonOutput;
-  var sourceKey = cssOutFilename;
+  transformOpts.cssOutFilename = cssOutFilename;
 
   // PostCSS plugins passed to FileSystemLoader
   var plugins = options.use || options.u;
@@ -142,15 +142,10 @@ module.exports = function (browserify, options) {
     return plugin;
   });
 
-  // get (or create) a loader for this entry file
-  var loader = loadersByFile[sourceKey];
-  if (!loader) {
-      loader = loadersByFile[sourceKey] = new FileSystemLoader(rootDir, plugins);
+  // create a loader for this entry file
+  if (!loadersByFile[cssOutFilename]) {
+    loadersByFile[cssOutFilename] = new FileSystemLoader(rootDir, plugins);
   }
-
-  // the compiled CSS stream needs to be avalible to the transform,
-  // but re-created on each bundle call.
-  var compiledCssStream;
 
   // TODO: clean this up so there's less scope crossing
   Cmify.prototype._flush = function (callback) {
@@ -160,19 +155,20 @@ module.exports = function (browserify, options) {
     // only handle .css files
     if (!this.isCssFile(filename)) { return callback(); }
 
+    // grab the correct loader
+    var loader = loadersByFile[this._cssOutFilename];
+
     // convert css to js before pushing
     // reset the `tokensByFile` cache
-    var relFilename = path.relative(rootDir, filename)
+    var relFilename = path.relative(rootDir, filename);
     tokensByFile[filename] = loader.tokensByFile[filename] = null;
 
     loader.fetch(relFilename, '/').then(function (tokens) {
       var deps = loader.deps.dependenciesOf(filename);
-      var output = [
-        deps.map(function (f) {
-          return "require('" + f + "')"
-        }).join('\n'),
-        'module.exports = ' + JSON.stringify(tokens)
-      ].join('\n');
+      var output = deps.map(function (f) {
+        return 'require("' + f + '")';
+      });
+      output.push('module.exports = ' + JSON.stringify(tokens));
 
       var isValid = true;
       var isUndefined = /\bundefined\b/;
@@ -184,18 +180,18 @@ module.exports = function (browserify, options) {
 
       if (!isValid) {
         var err = 'Composition in ' + filename + ' contains an undefined reference';
-        console.error(err)
-        output += '\nconsole.error("' + err + '");';
+        console.error(err);
+        output.push('console.error("' + err + '");');
       }
 
       assign(tokensByFile, loader.tokensByFile);
 
-      self.push(output);
-      return callback()
+      self.push(output.join('\n'));
+      return callback();
     }).catch(function (err) {
       self.push('console.error("' + err + '");');
       browserify.emit('error', err);
-      return callback()
+      return callback();
     });
   };
 
@@ -205,13 +201,14 @@ module.exports = function (browserify, options) {
 
   browserify.on('bundle', function (bundle) {
     // on each bundle, create a new stream b/c the old one might have ended
-    compiledCssStream = new ReadableStream();
+    var compiledCssStream = new ReadableStream();
     compiledCssStream._read = function () {};
 
     bundle.emit('css stream', compiledCssStream);
 
     bundle.on('end', function () {
       // Combine the collected sources for a single bundle into a single CSS file
+      var loader = loadersByFile[cssOutFilename];
       var css = loader.finalSource;
 
       // end the output stream
