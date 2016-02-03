@@ -88,7 +88,7 @@ module.exports = function (browserify, options) {
   options = options || {};
 
   // if no root directory is specified, assume the cwd
-  var rootDir = options.rootDir || options.d;
+  var rootDir = options.rootDir || browserify._options.basedir || options.d;
   if (rootDir) { rootDir = path.resolve(rootDir); }
   if (!rootDir) { rootDir = process.cwd(); }
 
