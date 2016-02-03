@@ -63,7 +63,7 @@ bundle.on('css stream', function (css) {
 
 ### Options:
 
-- `rootDir`: absolute path to your project's root directory. This is optional but providing it will result in better generated classnames.
+- `rootDir`: absolute path to your project's root directory. This is optional but providing it will result in better generated classnames. css-modulesify will try to use the browserify `basedir` if `rootDir` is not specified, if both are not specified it will use the location from which the command was executed. 
 - `output`: path to write the generated css. If not provided, you'll need to listen to the `'css stream'` event on the bundle to get the output.
 - `jsonOutput`: optional path to write a json manifest of classnames.
 - `use`: optional array of postcss plugins (by default we use the css-modules core plugins).
