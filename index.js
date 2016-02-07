@@ -190,7 +190,7 @@ module.exports = function (browserify, options) {
       return callback();
     }).catch(function (err) {
       self.push('console.error("' + err + '");');
-      browserify.emit('error', err);
+      self.emit('error', err);
       return callback();
     });
   };
