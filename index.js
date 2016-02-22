@@ -117,8 +117,8 @@ module.exports = function (browserify, options) {
 
   // load plugins by name (if a string is used)
   plugins = plugins.map(function requirePlugin (name) {
-    // assume functions are already required plugins
-    if (typeof name === 'function') {
+    // assume not strings are already required plugins
+    if (typeof name !== 'string') {
       return name;
     }
 
