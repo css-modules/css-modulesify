@@ -8,6 +8,7 @@
     "dependency-graph": "^0.4.1",
     "object-assign": "^3.0.0",
     "promise-polyfill": "^2.1.0",
+    "resolve": "^1.1.7",
     "string-hash": "^1.1.0",
     "through": "^2.3.7"
   },
