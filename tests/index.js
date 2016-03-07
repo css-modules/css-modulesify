@@ -8,7 +8,7 @@ var path = require('path');
 var casesDir = path.join(__dirname, 'cases');
 var cssOutFilename = 'out.css';
 
-var globalCases = ['compose-node-module', 'import-node-module'];
+var globalCases = ['compose-node-module', 'compose-local-node-module', 'import-node-module'];
 
 function runTestCase (dir) {
   tape('case: ' + dir, function (t) {

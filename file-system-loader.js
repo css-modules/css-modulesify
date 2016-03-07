@@ -1,6 +1,7 @@
 'use strict';
 
 var DepGraph = require('dependency-graph').DepGraph;
+var nodeResolve = require('resolve');
 
 Object.defineProperty(exports, '__esModule', {
   value: true
@@ -64,12 +65,13 @@ var FileSystemLoader = (function () {
       return new Promise(function (resolve, reject) {
         var relativeDir = _path2['default'].dirname(relativeTo),
             rootRelativePath = _path2['default'].resolve(relativeDir, newPath),
-            fileRelativePath = _path2['default'].resolve(_path2['default'].join(_this.root, relativeDir), newPath);
+            rootRelativeDir = _path2['default'].join(_this.root, relativeDir),
+            fileRelativePath = _path2['default'].resolve(rootRelativeDir, newPath);
 
         // if the path is not relative or absolute, try to resolve it in node_modules
         if (newPath[0] !== '.' && newPath[0] !== '/') {
           try {
-            fileRelativePath = require.resolve(newPath);
+            fileRelativePath = nodeResolve.sync(newPath, { basedir: rootRelativeDir });
           } catch (e) {}
         }
 
