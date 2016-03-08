@@ -72,6 +72,8 @@ var FileSystemLoader = (function () {
         if (newPath[0] !== '.' && newPath[0] !== '/') {
           try {
             fileRelativePath = nodeResolve.sync(newPath, { basedir: rootRelativeDir });
+            // in this case we need to actualize rootRelativePath too
+            rootRelativePath = _path2['default'].relative(_this.root, fileRelativePath);
           } catch (e) {}
         }
 
