@@ -66,7 +66,8 @@ b.on('css stream', function (css) {
 - `rootDir`: absolute path to your project's root directory. This is optional but providing it will result in better generated classnames.
 - `output`: path to write the generated css. If not provided, you'll need to listen to the `'css stream'` event on the bundle to get the output.
 - `jsonOutput`: optional path to write a json manifest of classnames.
-- `use`: optional array of postcss plugins (by default we use the css-modules core plugins).
+- `use`: optional array of postcss plugins (by default we use the css-modules core plugins). NOTE: it's safer to use `after`
+- `after`:  optional array of postcss plugins to run after the required css-modules core plugins are run.
 - `generateScopedName`: (API only) a function to override the default behaviour of creating locally scoped classnames.
 
 ### Events
