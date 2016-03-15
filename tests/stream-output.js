@@ -28,32 +28,42 @@ tape('stream output', function (t) {
   t.plan(cssFilesTotal * 2 + 1);
 
   var cssFilesCount = 0;
-  browserify(path.join(simpleCaseDir, 'main.js'))
+  var b = browserify(path.join(simpleCaseDir, 'main.js'));
+
+  b
     .plugin(cssModulesify, {
       rootDir: path.join(simpleCaseDir)
     })
     .on('error', t.error)
-    .bundle(function noop () {})
-      .on('css stream', function (stream) {
-        stream
-          .on('data', function onData (css) {
-            var cssString = css.toString();
-            // just get the first class name, use that as an id
-            var cssId = cssString.split('\n')[0].split(' ')[0];
+    .bundle(function noop () {});
 
-            t.ok(
-              ++cssFilesCount <= cssFilesTotal
-            , 'emits data for ' + cssId
-            );
+  b
+    .once('css stream', function (stream) {
+      stream
+        .on('data', function onData (css) {
+          var cssString = css.toString();
+          // just get the first class name, use that as an id
+          var cssId = cssString.split('\n')[0].split(' ')[0];
 
-            t.ok(
-              cssString.indexOf('._styles') === 0
-            , 'emits compiled css for ' + cssId
-            );
-          })
-          .on('end', function onEnd () {
-            t.pass('ends the stream');
-          })
-          .on('error', t.error);
-      });
+          t.ok(
+            ++cssFilesCount <= cssFilesTotal
+          , 'emits data for ' + cssId
+          );
+
+          t.ok(
+            cssString.indexOf('._styles') === 0
+          , 'emits compiled css for ' + cssId
+          );
+        })
+        .on('end', function onEnd () {
+          t.pass('ends the stream');
+
+          b.bundle(function noop () {});
+
+          b.once('css stream', function (stream2) {
+            t.ok(stream2, 'registers a second event for a CSS stream');
+          });
+        })
+        .on('error', t.error);
+    });
 });

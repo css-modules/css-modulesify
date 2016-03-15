@@ -56,7 +56,7 @@ b.plugin(require('css-modulesify'), {
 });
 
 var bundle = b.bundle()
-bundle.on('css stream', function (css) {
+b.on('css stream', function (css) {
   css.pipe(fs.createWriteStream('mycss.css'));
 });
 ```
@@ -70,7 +70,7 @@ bundle.on('css stream', function (css) {
 - `generateScopedName`: (API only) a function to override the default behaviour of creating locally scoped classnames.
 
 ### Events
-- `b.bundle().on('css stream', callback)` The callback is called with a readable stream containing the compiled CSS. You can write this to a file.
+- `b.on('css stream', callback)` The callback is called with a readable stream containing the compiled CSS. You can write this to a file.
 
 ## Using CSS Modules on the backend
 
