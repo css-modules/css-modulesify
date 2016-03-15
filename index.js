@@ -204,7 +204,7 @@ module.exports = function (browserify, options) {
     var compiledCssStream = new ReadableStream();
     compiledCssStream._read = function () {};
 
-    bundle.emit('css stream', compiledCssStream);
+    browserify.emit('css stream', compiledCssStream);
 
     bundle.on('end', function () {
       // Combine the collected sources for a single bundle into a single CSS file
