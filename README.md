@@ -69,6 +69,7 @@ b.on('css stream', function (css) {
 - `use`: optional array of postcss plugins (by default we use the css-modules core plugins). NOTE: it's safer to use `after`
 - `after`:  optional array of postcss plugins to run after the required css-modules core plugins are run.
 - `generateScopedName`: (API only) a function to override the default behaviour of creating locally scoped classnames.
+- `global`: optional boolean. Set to `true` if you want `css-modulesify` to apply to `node_modules` as well as local files. You can read more about it in the [browserify docs](https://github.com/substack/node-browserify/#btransformtr-opts).
 
 ### Events
 - `b.on('css stream', callback)` The callback is called with a readable stream containing the compiled CSS. You can write this to a file.
