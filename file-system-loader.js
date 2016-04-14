@@ -48,7 +48,6 @@ var FileSystemLoader = (function () {
 
     this.root = root;
     this.sources = {};
-    this.traces = {};
     this.importNr = 0;
     this.core = new _indexJs2['default'](plugins);
     this.tokensByFile = {};
@@ -107,7 +106,6 @@ var FileSystemLoader = (function () {
             var exportTokens = _ref.exportTokens;
 
             _this.sources[fileRelativePath] = injectableSource;
-            _this.traces[trace] = fileRelativePath;
             _this.tokensByFile[fileRelativePath] = exportTokens;
             resolve(exportTokens);
           }, reject);
@@ -117,12 +115,10 @@ var FileSystemLoader = (function () {
   }, {
     key: 'finalSource',
     get: function () {
-      var traces = this.traces;
       var sources = this.sources;
       var written = {};
 
-      return Object.keys(traces).sort(traceKeySorter).map(function (key) {
-        var filename = traces[key];
+      return this.deps.overallOrder().map(function (filename) {
         if (written[filename] === true) {
           return null;
         }
