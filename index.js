@@ -123,7 +123,7 @@ module.exports = function (browserify, options) {
       return name;
     }
 
-    var plugin = require(require.resolve(name));
+    var plugin = module.parent.require(name);
 
     // custom scoped name generation
     if (name === 'postcss-modules-scope') {
