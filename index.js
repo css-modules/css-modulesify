@@ -9,6 +9,7 @@ var FileSystemLoader = require('./file-system-loader');
 var assign = require('object-assign');
 var stringHash = require('string-hash');
 var ReadableStream = require('stream').Readable;
+var through = require('through');
 
 /*
   Custom `generateScopedName` function for `postcss-modules-scope`.
@@ -206,8 +207,9 @@ module.exports = function (browserify, options) {
 
     browserify.emit('css stream', compiledCssStream);
 
-    bundle.on('end', function () {
+    browserify.pipeline.get('pack').push(through(null, function () {
       // Combine the collected sources for a single bundle into a single CSS file
+      var self = this;
       var loader = loadersByFile[cssOutFilename];
       var css = loader.finalSource;
 
@@ -215,28 +217,38 @@ module.exports = function (browserify, options) {
       compiledCssStream.push(css);
       compiledCssStream.push(null);
 
+      const writes = [];
+
       // write the css file
       if (cssOutFilename) {
-        fs.writeFile(cssOutFilename, css, function (err) {
-          if (err) {
-            browserify.emit('error', err);
-          }
-        });
+        writes.push(writeFile(cssOutFilename, css));
       }
 
       // write the classname manifest
       if (jsonOutFilename) {
-        fs.writeFile(jsonOutFilename, JSON.stringify(normalizeManifestPaths(tokensByFile, rootDir)), function (err) {
-          if (err) {
-            browserify.emit('error', err);
-          }
-        });
+        writes.push(writeFile(jsonOutFilename, JSON.stringify(normalizeManifestPaths(tokensByFile, rootDir))));
       }
-    });
+
+      Promise.all(writes)
+        .then(function () { self.queue(null); })
+        .catch(function (err) { self.emit('error', err); })
+    }));
   });
+
 
   return browserify;
 };
+
+function writeFile(filename, content) {
+  return new Promise(function (resolve, reject) {
+    fs.writeFile(filename, content, function (err) {
+      if (err)
+        reject(err);
+      else
+        resolve();
+    });
+  });
+}
 
 module.exports.generateShortName = generateShortName;
 module.exports.generateLongName = generateLongName;
