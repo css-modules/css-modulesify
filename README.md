@@ -67,6 +67,7 @@ b.on('css stream', function (css) {
 - `output`: path to write the generated css. If not provided, you'll need to listen to the `'css stream'` event on the bundle to get the output.
 - `jsonOutput`: optional path to write a json manifest of classnames.
 - `use`: optional array of postcss plugins (by default we use the css-modules core plugins). NOTE: it's safer to use `after`
+- `before`:  optional array of postcss plugins to run before the required css-modules core plugins are run.
 - `after`:  optional array of postcss plugins to run after the required css-modules core plugins are run.
 - `generateScopedName`: (API only) a function to override the default behaviour of creating locally scoped classnames.
 - `global`: optional boolean. Set to `true` if you want `css-modulesify` to apply to `node_modules` as well as local files. You can read more about it in the [browserify docs](https://github.com/substack/node-browserify/#btransformtr-opts).
@@ -96,7 +97,7 @@ The following PostCSS plugins are enabled by default:
 
 You can override the default PostCSS Plugins (and add your own) by passing `--use|-u` to `css-modulesify`.
 
-Or if you just want to add some extra plugins to run after the default, add them to the `postcssAfter` array option (API only at this time).
+Or if you just want to add some extra plugins to run after the default, add them to the `postcssAfter` array option (API only at this time). In the same way, add extra plugins to `postcssBefore` to run the before the defaults.
 
 In addition you may also wish to configure defined PostCSS plugins by passing `--plugin.option true`.
 

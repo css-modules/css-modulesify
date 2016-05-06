@@ -112,8 +112,9 @@ module.exports = function (browserify, options) {
     }
   }
 
+  var postcssBefore = options.postcssBefore || options.before || [];
   var postcssAfter = options.postcssAfter || options.after || [];
-  plugins = plugins.concat(postcssAfter);
+  plugins = postcssBefore.concat(plugins).concat(postcssAfter);
 
   // load plugins by name (if a string is used)
   plugins = plugins.map(function requirePlugin (name) {
