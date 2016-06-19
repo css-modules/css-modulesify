@@ -25,7 +25,7 @@ tape('stream output', function (t) {
     fs: fakeFs
   });
 
-  t.plan(cssFilesTotal * 2 + 1);
+  t.plan(cssFilesTotal * 2 + 2);
 
   var cssFilesCount = 0;
   var b = browserify(path.join(simpleCaseDir, 'main.js'));

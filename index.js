@@ -9,7 +9,7 @@ var FileSystemLoader = require('./file-system-loader');
 var assign = require('object-assign');
 var stringHash = require('string-hash');
 var ReadableStream = require('stream').Readable;
-var through = require('through');
+var through = require('through2');
 
 /*
   Custom `generateScopedName` function for `postcss-modules-scope`.
@@ -201,14 +201,17 @@ module.exports = function (browserify, options) {
 
   // ----
 
-  browserify.on('bundle', function (bundle) {
-    // on each bundle, create a new stream b/c the old one might have ended
-    var compiledCssStream = new ReadableStream();
-    compiledCssStream._read = function () {};
+  function addHooks () {
+    browserify.pipeline.get('pack').push(through(function write (row, enc, next) {
+      next(null, row)
+    }, function end (cb) {
 
-    browserify.emit('css stream', compiledCssStream);
+      // on each bundle, create a new stream b/c the old one might have ended
+      var compiledCssStream = new ReadableStream();
+      compiledCssStream._read = function () {};
 
-    browserify.pipeline.get('pack').push(through(null, function () {
+      browserify.emit('css stream', compiledCssStream);
+
       // Combine the collected sources for a single bundle into a single CSS file
       var self = this;
       var loader = loadersByFile[cssOutFilename];
@@ -229,13 +232,14 @@ module.exports = function (browserify, options) {
       if (jsonOutFilename) {
         writes.push(writeFile(jsonOutFilename, JSON.stringify(normalizeManifestPaths(tokensByFile, rootDir))));
       }
-
       Promise.all(writes)
-        .then(function () { self.queue(null); })
-        .catch(function (err) { self.emit('error', err); })
+        .then(function () { cb(); })
+        .catch(function (err) { self.emit('error', err); cb() })
     }));
-  });
+  }
 
+  browserify.on('reset', addHooks);
+  addHooks();
 
   return browserify;
 };
