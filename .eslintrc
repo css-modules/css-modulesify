@@ -24,7 +24,6 @@
     "no-negated-in-lhs": 2,
     "no-obj-calls": 2,
     "no-regex-spaces": 2,
-    "quote-props": [1, "consistent-as-needed"],
     "no-sparse-arrays": 2,
     "no-unreachable": 2,
     "use-isnan": 2,
@@ -92,7 +91,7 @@
       2,
       "all"
     ],
-    "no-use-before-define": 2,
+    "no-use-before-define": 0,
     "handle-callback-err": 2,
     "no-mixed-requires": 0,
     "no-new-require": 2,
@@ -219,7 +218,6 @@
         ]
       }
     ],
-    "array-bracket-spacing": [1, "never"],
     "wrap-regex": 0,
     "constructor-super": 2,
     "no-this-before-super": 2,
