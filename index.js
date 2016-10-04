@@ -203,9 +203,8 @@ module.exports = function (browserify, options) {
 
   function addHooks () {
     browserify.pipeline.get('pack').push(through(function write (row, enc, next) {
-      next(null, row)
+      next(null, row);
     }, function end (cb) {
-
       // on each bundle, create a new stream b/c the old one might have ended
       var compiledCssStream = new ReadableStream();
       compiledCssStream._read = function () {};
@@ -221,7 +220,7 @@ module.exports = function (browserify, options) {
       compiledCssStream.push(css);
       compiledCssStream.push(null);
 
-      const writes = [];
+      var writes = [];
 
       // write the css file
       if (cssOutFilename) {
@@ -234,7 +233,7 @@ module.exports = function (browserify, options) {
       }
       Promise.all(writes)
         .then(function () { cb(); })
-        .catch(function (err) { self.emit('error', err); cb() })
+        .catch(function (err) { self.emit('error', err); cb(); });
     }));
   }
 
@@ -244,13 +243,11 @@ module.exports = function (browserify, options) {
   return browserify;
 };
 
-function writeFile(filename, content) {
+function writeFile (filename, content) {
   return new Promise(function (resolve, reject) {
     fs.writeFile(filename, content, function (err) {
-      if (err)
-        reject(err);
-      else
-        resolve();
+      if (err) reject(err);
+      else resolve();
     });
   });
 }
