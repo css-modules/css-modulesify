@@ -101,6 +101,7 @@ module.exports = function (browserify, options) {
   var cssOutFilename = options.output || options.o;
   var jsonOutFilename = options.json || options.jsonOutput;
   transformOpts.cssOutFilename = cssOutFilename;
+  transformOpts.cssFilePattern = options.filePattern;
 
   // PostCSS plugins passed to FileSystemLoader
   var plugins = options.use || options.u;
