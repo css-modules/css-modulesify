@@ -10,14 +10,14 @@ function Cmify(filename, opts) {
 
   stream.Transform.call(this);
 
-  this.cssExt = /\.css$/;
+  this.cssFilePattern = new RegExp(opts.cssFilePattern || '\.css$');
   this._data = "";
   this._filename = filename;
   this._cssOutFilename = opts.cssOutFilename;
 }
 
 Cmify.prototype.isCssFile = function (filename) {
-  return this.cssExt.test(filename)
+  return this.cssFilePattern.test(filename)
 }
 
 Cmify.prototype._transform = function (buf, enc, callback) {
