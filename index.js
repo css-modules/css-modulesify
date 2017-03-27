@@ -94,7 +94,7 @@ module.exports = function (browserify, options) {
   if (!rootDir) { rootDir = process.cwd(); }
 
   var transformOpts = {};
-  if (options.global) {
+  if (options.global || options.g) {
     transformOpts.global = true;
   }
 
