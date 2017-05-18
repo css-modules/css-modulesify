@@ -1,6 +1,6 @@
 {
   "name": "css-modulesify",
-  "version": "0.27.2",
+  "version": "0.28.0",
   "description": "A browserify transform to load CSS Modules",
   "main": "index.js",
   "dependencies": {
