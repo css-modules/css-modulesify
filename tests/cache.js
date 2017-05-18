@@ -25,6 +25,7 @@ tape('multiple builds', function (t) {
     fs: fakeFs
   });
 
+  var cssModulesifyCache = {};
   var getBundler = rebundler(function (cache, packageCache) {
     return browserify(path.join(simpleCaseDir, 'main.js'), {
       cache: cache
@@ -34,6 +35,7 @@ tape('multiple builds', function (t) {
       .plugin(cssModulesify, {
         rootDir: path.join(simpleCaseDir)
         , output: cssOutFilename
+        , cache: cssModulesifyCache
       });
   });
 

@@ -6,7 +6,6 @@ var path = require('path');
 var Cmify = require('./cmify');
 var Core = require('css-modules-loader-core');
 var FileSystemLoader = require('./file-system-loader');
-var assign = require('object-assign');
 var stringHash = require('string-hash');
 var ReadableStream = require('stream').Readable;
 var through = require('through2');
@@ -75,35 +74,8 @@ function normalizeManifestPaths (tokensByFile, rootDir) {
   return output;
 }
 
-// caches
-//
-// persist these for as long as the process is running. #32
-
-// keep track of all tokens so we can avoid duplicates
-var tokensByFile = {};
-
-// we need a separate loader for each entry point
-var loadersByFile = {};
-
-module.exports = function (browserify, options) {
-  options = options || {};
-
-  // if no root directory is specified, assume the cwd
-  var rootDir = options.rootDir || options.d || browserify._options.basedir;
-  if (rootDir) { rootDir = path.resolve(rootDir); }
-  if (!rootDir) { rootDir = process.cwd(); }
-
-  var transformOpts = {};
-  if (options.global || options.g) {
-    transformOpts.global = true;
-  }
-
-  var cssOutFilename = options.output || options.o;
-  var jsonOutFilename = options.json || options.jsonOutput;
-  transformOpts.cssOutFilename = cssOutFilename;
-  transformOpts.cssFilePattern = options.filePattern;
-
-  // PostCSS plugins passed to FileSystemLoader
+// PostCSS plugins passed to FileSystemLoader
+function getPlugins (options) {
   var plugins = options.use || options.u;
   if (!plugins) {
     plugins = getDefaultPlugins(options);
@@ -119,7 +91,7 @@ module.exports = function (browserify, options) {
   plugins = (Array.isArray(postcssBefore) ? postcssBefore : [postcssBefore]).concat(plugins).concat(postcssAfter);
 
   // load plugins by name (if a string is used)
-  plugins = plugins.map(function requirePlugin (name) {
+  return plugins.map(function requirePlugin (name) {
     // assume not strings are already required plugins
     if (typeof name !== 'string') {
       return name;
@@ -144,58 +116,54 @@ module.exports = function (browserify, options) {
 
     return plugin;
   });
+}
 
-  // create a loader for this entry file
-  if (!loadersByFile[cssOutFilename]) {
-    loadersByFile[cssOutFilename] = new FileSystemLoader(rootDir, plugins);
+module.exports = function (browserify, options) {
+  options = options || {};
+
+  // if no root directory is specified, assume the cwd
+  var rootDir = options.rootDir || options.d || browserify._options.basedir;
+  if (rootDir) {
+    rootDir = path.resolve(rootDir);
+  }
+  if (!rootDir) {
+    rootDir = process.cwd();
   }
 
-  // TODO: clean this up so there's less scope crossing
-  Cmify.prototype._flush = function (callback) {
-    var self = this;
-    var filename = this._filename;
+  var cssOutFilename = options.output || options.o;
+  var jsonOutFilename = options.json || options.jsonOutput;
+  var loader;
+  // keep track of all tokens so we can avoid duplicates
+  var tokensByFile;
+  if (options.cache) {
+    if (options.cache.loaders) {
+      loader = options.cache.loaders[cssOutFilename];
+    } else {
+      options.cache.loaders = {};
+    }
+    if (options.cache.tokens) {
+      tokensByFile = options.cache.tokens;
+    } else {
+      options.cache.tokens = {};
+    }
+  }
 
-    // only handle .css files
-    if (!this.isCssFile(filename)) { return callback(); }
+  loader = loader || new FileSystemLoader(rootDir, getPlugins(options));
+  tokensByFile = tokensByFile || {};
 
-    // grab the correct loader
-    var loader = loadersByFile[this._cssOutFilename];
+  if (options.cache) {
+    options.cache.loaders[cssOutFilename] = loader;
+    options.cache.tokens = tokensByFile;
+  }
 
-    // convert css to js before pushing
-    // reset the `tokensByFile` cache
-    var relFilename = path.relative(rootDir, filename);
-    tokensByFile[filename] = loader.tokensByFile[filename] = null;
-
-    loader.fetch(relFilename, '/').then(function (tokens) {
-      var deps = loader.deps.dependenciesOf(filename);
-      var output = deps.map(function (f) {
-        return 'require("' + f + '")';
-      });
-      output.push('module.exports = ' + JSON.stringify(tokens));
-
-      var isValid = true;
-      var isUndefined = /\bundefined\b/;
-      Object.keys(tokens).forEach(function (k) {
-        if (isUndefined.test(tokens[k])) {
-          isValid = false;
-        }
-      });
-
-      if (!isValid) {
-        var err = 'Composition in ' + filename + ' contains an undefined reference';
-        console.error(err);
-        output.push('console.error("' + err + '");');
-      }
-
-      assign(tokensByFile, loader.tokensByFile);
-
-      self.push(output.join('\n'));
-      return callback();
-    }).catch(function (err) {
-      self.push('console.error("' + err + '");');
-      self.emit('error', err);
-      return callback();
-    });
+  var transformOpts = {
+    cssFilePattern: options.filePattern
+    , cssFiles: []
+    , cssOutFilename: cssOutFilename
+    , global: options.global || options.g
+    , loader: loader
+    , rootDir: rootDir
+    , tokensByFile: tokensByFile
   };
 
   browserify.transform(Cmify, transformOpts);
@@ -214,7 +182,6 @@ module.exports = function (browserify, options) {
 
       // Combine the collected sources for a single bundle into a single CSS file
       var self = this;
-      var loader = loadersByFile[cssOutFilename];
       var css = loader.finalSource;
 
       // end the output stream

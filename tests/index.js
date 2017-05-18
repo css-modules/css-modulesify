@@ -11,13 +11,13 @@ var cssOutFilename = 'out.css';
 function runTestCase (dir) {
   tape('case: ' + dir, function (t) {
     // load (optional) custom setup for this testcase
-    var customPath = path.join(casesDir, dir, 'custom.js')
-    var customOpts
+    var customPath = path.join(casesDir, dir, 'custom.js');
+    var customOpts;
     try {
-      fs.accessSync(customPath)
-      customOpts = require(customPath)
+      fs.accessSync(customPath);
+      customOpts = require(customPath);
     } catch (e) {
-      customOpts = {}
+      customOpts = {};
     }
 
     var fakeFs = {
